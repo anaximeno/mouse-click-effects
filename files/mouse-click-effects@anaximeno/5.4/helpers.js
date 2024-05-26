@@ -17,6 +17,7 @@
  */
 'use strict';
 
+const Util = imports.misc.util;
 
 class Debouncer {
     _sourceId;
@@ -27,7 +28,7 @@ class Debouncer {
 
     clear() {
         if (this._sourceId > 0) {
-            clearTimeout(this._sourceId);
+            Util.clearTimeout(this._sourceId);
             this._sourceId = 0;
         }
     }
@@ -35,7 +36,7 @@ class Debouncer {
     debounce(fn, timeout) {
         return ((...args) => {
             this.clear();
-            this._sourceId = setTimeout(() => {
+            this._sourceId = Util.setTimeout(() => {
                 this.clear();
                 fn.apply(this, args);
             }, timeout);

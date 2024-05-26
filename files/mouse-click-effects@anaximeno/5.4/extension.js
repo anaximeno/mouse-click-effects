@@ -18,20 +18,18 @@
 'use strict';
 
 const Settings = imports.ui.settings;
-const Applet = imports.ui.applet;
 const Gettext = imports.gettext;
-
 const SignalManager = imports.misc.signalManager;
-const { Atspi, GLib, Gio, St, Clutter } = imports.gi;
+const { Atspi, GLib, Gio } = imports.gi;
+const { ClickAnimationFactory } = require("./clickAnimations.js");
+const { Debouncer } = require("./helpers.js");
 
-import { ClickAnimationFactory } from "./clickAnimations.js";
-import { Debouncer } from "./helpers.js";
 
-
-const UUID = "mouse-click-effects@anaximeno";
 const LOCALE_DIR = GLib.get_home_dir() + "/.local/share/locale";
+const UUID = "mouse-click-effects@anaximeno";
 
 Gettext.bindtextdomain(UUID, LOCALE_DIR);
+
 
 function _(text) {
 	let localized = Gettext.dgettext(UUID, text);
@@ -44,24 +42,24 @@ const ClickType = {
     RIGHT: "right_click",
 };
 
-class MouseClickEffects extends Applet.Applet {
+
+class MouseClickEffects {
 	constructor(metadata) {
-		super(metadata);
 		this.metadata = metadata;
+		this.app_icons_dir = `${metadata.path}/../icons`;
 		this.settings = this._setup_settings(this.metadata.uuid);
 		this.data_dir = this._init_data_dir(this.metadata.uuid);
-		this.app_icons_dir = `${metadata.path}/../icons`;
+		this.enabled = false;
 
 		Atspi.init();
-		this.listener = Atspi.EventListener.new(this._click_event.bind(this));
 
+		this.listener = Atspi.EventListener.new(this._click_event.bind(this));
 		this.signals = new SignalManager.SignalManager(null);
 		this.signals.connect(global.screen, 'in-fullscreen-changed', this.on_fullscreen_changed, this);
 
 		this.display_click = (new Debouncer()).debounce(this._animate_click.bind(this), 2);
 		this.colored_icon_store = {};
 		this.update_colored_icons();
-		this.set_active(this.enabled);
 	}
 
     _init_data_dir(uuid) {
@@ -77,8 +75,8 @@ class MouseClickEffects extends Applet.Applet {
 		let settings = new Settings.AppletSettings(this, uuid);
 		let bindings = [
 			{
-				key: "fade-timeout",
-				value: "fade_timeout",
+				key: "animation-time",
+				value: "animation_time",
 				cb: null,
 			},
 			{
@@ -91,24 +89,19 @@ class MouseClickEffects extends Applet.Applet {
 				value: "size",
 				cb: null,
 			},
-			{ // TODO: set keybinding to control this, and maybe make it hidden
-				key: "enabled",
-				value: "enabled",
-				cb: this.on_effects_enabled_updated,
-			},
 			{
-				key: "left-click-enabled",
-				value: "left_click_enabled",
+				key: "left-click-effect-enabled",
+				value: "left_click_effect_enabled",
 				cb: null,
 			},
 			{
-				key: "right-click-enabled",
-				value: "right_click_enabled",
+				key: "right-click-effect-enabled",
+				value: "right_click_effect_enabled",
 				cb: null,
 			},
 			{
-				key: "middle-click-enabled",
-				value: "middle_click_enabled",
+				key: "middle-click-effect-enabled",
+				value: "middle_click_effect_enabled",
 				cb: null,
 			},
 			{
@@ -152,16 +145,23 @@ class MouseClickEffects extends Applet.Applet {
         return settings;
 	}
 
+	enable() {
+		this.set_active(true);
+	}
+
+	disable() {
+		this.destroy();
+	}
+
 	on_effects_enabled_updated(event) {
 		thib.on_property_updated(event);
-		this.set_active(this.enabled);
 	}
 
 	on_fullscreen_changed() {
         if (this.deactivate_on_fullscreen) {
             const monitor = global.screen.get_current_monitor();
             const monitorIsInFullscreen = global.screen.get_monitor_in_fullscreen(monitor);
-			this.set_active(!monitorIsInFullscreen && this.enabled);
+			this.set_active(!monitorIsInFullscreen);
 		}
 	}
 
@@ -195,10 +195,7 @@ class MouseClickEffects extends Applet.Applet {
 	}
 
 	set_active(enabled) {
-		if (enabled == null || enabled == undefined) {
-			enabled = this.enabled;
-		}
-
+		this.enabled = enabled;
 		this.listener.deregister('mouse');
 
 		if (enabled) {
@@ -208,7 +205,7 @@ class MouseClickEffects extends Applet.Applet {
 	}
 
 	_create_colored_icon_data(click_type, color) {
-		if (this.get_colored_icon(this.data_dir, this.icon_mode, click_type, color))
+		if (this.get_colored_icon(this.icon_mode, click_type, color))
 			return;
 
         let source = Gio.File.new_for_path(`${this.app_icons_dir}/${this.icon_mode}.svg`);
@@ -229,14 +226,14 @@ class MouseClickEffects extends Applet.Applet {
 		let [r_success, tag] = dest.replace_contents(contents, null, false, Gio.FileCreateFlags.REPLACE_DESTINATION, null);
 	}
 
-	_animate_click(clickType, color) {
-		let icon = this.get_colored_icon(this.data_dir, this.icon_mode, clickType, color);
+	_animate_click(click_type, color) {
+		let icon = this.get_colored_icon(this.icon_mode, click_type, color);
 
 		if (icon) {
 			const options = {
-				icon_size: this.size,
 				opacity: this.general_opacity,
-				timeout: this.fade_timeout,
+				icon_size: this.size,
+				timeout: this.animation_time,
 			};
 
 			ClickAnimationFactory.createForMode(this.animation_mode).animateClick(icon, options);
@@ -246,15 +243,15 @@ class MouseClickEffects extends Applet.Applet {
 	_click_event(event) {
 		switch (event.type) {
 			case 'mouse:button:1p':
-				if (this.left_click_enabled)
+				if (this.left_click_effect_enabled)
 					this.display_click(ClickType.LEFT, this.left_click_color);
 				break;
 			case 'mouse:button:2p':
-				if (this.middle_click_enabled)
+				if (this.middle_click_effect_enabled)
 					this.display_click(ClickType.MIDDLE, this.middle_click_color);
 				break;
 			case 'mouse:button:3p':
-				if (this.right_click_enabled)
+				if (this.right_click_effect_enabled)
 					this.display_click(ClickType.RIGHT, this.right_click_color);
 				break;
 		}

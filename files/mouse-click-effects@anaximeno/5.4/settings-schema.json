@@ -57,29 +57,29 @@
 		"type": "section",
 		"description": "Events"
 	},
-	"left-click-enabled": {
+	"left-click-effect-enabled": {
 		"type": "checkbox",
 		"default": true,
-		"description": "Enable Left Click"
+		"description": "Enable Left Click Effect"
 	},
-	"middle-click-enabled": {
+	"middle-click-effect-enabled": {
 		"type": "checkbox",
 		"default": true,
-		"description": "Enable Middle Click"
+		"description": "Enable Middle Click Effect"
 	},
-	"right-click-enabled": {
+	"right-click-effect-enabled": {
 		"type": "checkbox",
 		"default": true,
-		"description": "Enable Right Click"
+		"description": "Enable Right Click Effect"
 	},
-	"fade-timeout": {
+	"animation-time": {
 		"type": "spinbutton",
 		"default": 400,
 		"min": 100,
 		"max": 5000,
 		"step": 50,
 		"units": "ms",
-		"description": "Fade Timeout"
+		"description": "Animation Time"
 	},
 	"colors-section": {
 		"type": "section",
@@ -89,19 +89,19 @@
 		"type": "colorchooser",
 		"default": "#0c75de",
 		"description": "Left Click Color",
-		"dependency": "left-click-enabled"
+		"dependency": "left-click-effect-enabled"
 	},
 	"middle-click-color": {
 		"type": "colorchooser",
 		"default": "#40BEBF",
 		"description": "Middle Click Color",
-		"dependency": "middle-click-enabled"
+		"dependency": "middle-click-effect-enabled"
 	},
 	"right-click-color": {
 		"type": "colorchooser",
 		"default": "#4077BF",
 		"description": "Right Click Color",
-		"dependency": "right-click-enabled"
+		"dependency": "right-click-effect-enabled"
 	},
 	"general-opacity": {
 		"type": "spinbutton",
