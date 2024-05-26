@@ -82,7 +82,7 @@ class MouseClickEffects {
 			{
 				key: "icon-mode",
 				value: "icon_mode",
-				cb: this.on_property_updated,
+				cb: this.update_colored_icons,
 			},
 			{
 				key: "size",
@@ -130,8 +130,8 @@ class MouseClickEffects {
 				cb: null,
 			},
 			{
-				key: "deactivate-on-fullscreen",
-				value: "deactivate_on_fullscreen",
+				key: "deactivate-in-fullscreen",
+				value: "deactivate_in_fullscreen",
 				cb: null,
 			},
 		]
@@ -158,7 +158,7 @@ class MouseClickEffects {
 	}
 
 	on_fullscreen_changed() {
-        if (this.deactivate_on_fullscreen) {
+        if (this.deactivate_in_fullscreen) {
             const monitor = global.screen.get_current_monitor();
             const monitorIsInFullscreen = global.screen.get_monitor_in_fullscreen(monitor);
 			this.set_active(!monitorIsInFullscreen);
