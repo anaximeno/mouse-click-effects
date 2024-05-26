@@ -49,7 +49,6 @@ class MouseClickEffects {
 		this.app_icons_dir = `${metadata.path}/../icons`;
 		this.settings = this._setup_settings(this.metadata.uuid);
 		this.data_dir = this._init_data_dir(this.metadata.uuid);
-		this.enabled = false;
 
 		Atspi.init();
 
@@ -57,6 +56,7 @@ class MouseClickEffects {
 		this.signals = new SignalManager.SignalManager(null);
 		this.signals.connect(global.screen, 'in-fullscreen-changed', this.on_fullscreen_changed, this);
 
+		this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
 		this.display_click = (new Debouncer()).debounce(this._animate_click.bind(this), 2);
 		this.colored_icon_store = {};
 		this.update_colored_icons();
@@ -127,7 +127,7 @@ class MouseClickEffects {
 			{
 				key: "animation-mode",
 				value: "animation_mode",
-				cb: null,
+				cb: this.on_animation_mode_changed,
 			},
 			{
 				key: "deactivate-in-fullscreen",
@@ -165,6 +165,10 @@ class MouseClickEffects {
 		}
 	}
 
+	on_animation_mode_changed() {
+		this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
+	}
+
     get_colored_icon(mode, click_type, color) {
         const name = `${mode}_${click_type}_${color}`;
 
@@ -195,7 +199,6 @@ class MouseClickEffects {
 	}
 
 	set_active(enabled) {
-		this.enabled = enabled;
 		this.listener.deregister('mouse');
 
 		if (enabled) {
@@ -229,14 +232,16 @@ class MouseClickEffects {
 	_animate_click(click_type, color) {
 		let icon = this.get_colored_icon(this.icon_mode, click_type, color);
 
+		if (!this._click_animation || this._click_animation.id != this.animation_mode) {
+			this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
+		}
+
 		if (icon) {
-			const options = {
+			this._click_animation.animateClick(icon, {
 				opacity: this.general_opacity,
 				icon_size: this.size,
 				timeout: this.animation_time,
-			};
-
-			ClickAnimationFactory.createForMode(this.animation_mode).animateClick(icon, options);
+			});
 		}
 	}
 

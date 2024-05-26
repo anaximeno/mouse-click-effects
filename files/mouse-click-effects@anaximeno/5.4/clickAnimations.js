@@ -22,7 +22,9 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 
 class ClickAnimationMode {
-    constructor() { }
+    constructor(mode) {
+        this.mode = mode;
+    }
 
     /**
      * Animates the click into the screen
@@ -191,14 +193,14 @@ class ClickAnimationFactory {
     static createForMode(mode) {
         switch (mode) {
             case "bounce":
-                return new BounceBackClickAnimationMode();
+                return new BounceBackClickAnimationMode(mode);
             case "retract":
-                return new RetractionClickAnimationMode();
+                return new RetractionClickAnimationMode(mode);
             case "expand":
-                return new ExpansionClickAnimationMode();
+                return new ExpansionClickAnimationMode(mode);
             case "blink":
             default:
-                return new BlinkClickAnimationMode();
+                return new BlinkClickAnimationMode(mode);
         }
     }
 }
