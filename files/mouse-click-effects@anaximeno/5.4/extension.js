@@ -127,7 +127,7 @@ class MouseClickEffects {
 			{
 				key: "animation-mode",
 				value: "animation_mode",
-				cb: this.on_animation_mode_changed,
+				cb: this.update_animation_mode,
 			},
 			{
 				key: "deactivate-in-fullscreen",
@@ -167,7 +167,7 @@ class MouseClickEffects {
 		}
 	}
 
-	on_animation_mode_changed() {
+	update_animation_mode() {
 		if (!this._click_animation || this._click_animation.mode != this.animation_mode) {
 			this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
 		}
@@ -234,7 +234,7 @@ class MouseClickEffects {
 	}
 
 	_animate_click(click_type, color) {
-		this.on_animation_mode_changed();
+		this.update_animation_mode();
 
 		let icon = this.get_colored_icon(this.icon_mode, click_type, color);
 
