@@ -168,7 +168,9 @@ class MouseClickEffects {
 	}
 
 	on_animation_mode_changed() {
-		this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
+		if (!this._click_animation || this._click_animation.mode != this.animation_mode) {
+			this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
+		}
 	}
 
     get_colored_icon(mode, click_type, color) {
@@ -232,11 +234,9 @@ class MouseClickEffects {
 	}
 
 	_animate_click(click_type, color) {
-		let icon = this.get_colored_icon(this.icon_mode, click_type, color);
+		this.on_animation_mode_changed();
 
-		if (!this._click_animation || this._click_animation.id != this.animation_mode) {
-			this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
-		}
+		let icon = this.get_colored_icon(this.icon_mode, click_type, color);
 
 		if (icon) {
 			this._click_animation.animateClick(icon, {
