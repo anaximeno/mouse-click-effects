@@ -132,7 +132,7 @@ class MouseClickEffects {
 			{
 				key: "deactivate-in-fullscreen",
 				value: "deactivate_in_fullscreen",
-				cb: null,
+				cb: this.on_fullscreen_changed,
 			},
 		]
 
@@ -162,6 +162,8 @@ class MouseClickEffects {
             const monitor = global.screen.get_current_monitor();
             const monitorIsInFullscreen = global.screen.get_monitor_in_fullscreen(monitor);
 			this.set_active(!monitorIsInFullscreen);
+		} else {
+			this.set_active(true);
 		}
 	}
 
