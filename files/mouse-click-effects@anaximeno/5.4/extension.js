@@ -17,24 +17,24 @@
  */
 'use strict';
 
+const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext;
 const SignalManager = imports.misc.signalManager;
 const { Atspi, GLib, Gio } = imports.gi;
 const { ClickAnimationFactory } = require("./clickAnimations.js");
 const { Debouncer } = require("./helpers.js");
+const { UUID, PAUSE_EFFECTS_KEY } = require("./constants.js");
 
 
-const LOCALE_DIR = GLib.get_home_dir() + "/.local/share/locale";
-const UUID = "mouse-click-effects@anaximeno";
-
-Gettext.bindtextdomain(UUID, LOCALE_DIR);
+Gettext.bindtextdomain(UUID, `${GLib.get_home_dir()}/.local/share/locale`);
 
 
 function _(text) {
 	let localized = Gettext.dgettext(UUID, text);
 	return localized != text ? localized : window._(text);
 }
+
 
 const ClickType = {
     LEFT: "left_click",
@@ -57,9 +57,13 @@ class MouseClickEffects {
 		this.signals.connect(global.screen, 'in-fullscreen-changed', this.on_fullscreen_changed, this);
 
 		this._click_animation = ClickAnimationFactory.createForMode(this.animation_mode);
+
 		this.display_click = (new Debouncer()).debounce(this._animate_click.bind(this), 2);
 		this.colored_icon_store = {};
+		this.enabled = false;
+
 		this.update_colored_icons();
+		this.set_keybindings();
 	}
 
     _init_data_dir(uuid) {
@@ -130,6 +134,11 @@ class MouseClickEffects {
 				cb: this.update_animation_mode,
 			},
 			{
+				key: "pause-effects-binding",
+				value: "pause_effects_binding",
+				cb: this.set_keybindings,
+			},
+			{
 				key: "deactivate-in-fullscreen",
 				value: "deactivate_in_fullscreen",
 				cb: this.on_fullscreen_changed,
@@ -150,8 +159,23 @@ class MouseClickEffects {
 	}
 
 	disable() {
+		this.set_active(false);
+		this.unset_keybindings();
 		this.destroy();
 	}
+
+	unset_keybindings() {
+		Main.keybindingManager.removeHotKey(PAUSE_EFFECTS_KEY);
+	}
+
+	set_keybindings() {
+		this.unset_keybindings();
+        Main.keybindingManager.addHotKey(
+			PAUSE_EFFECTS_KEY,
+			this.pause_effects_binding,
+            () => this.set_active(!this.enabled),
+		);
+    }
 
 	on_effects_enabled_updated(event) {
 		thib.on_property_updated(event);
@@ -203,6 +227,7 @@ class MouseClickEffects {
 	}
 
 	set_active(enabled) {
+		this.enabled = enabled;
 		this.listener.deregister('mouse');
 
 		if (enabled) {
