@@ -69,8 +69,10 @@ class MouseClickEffects {
     _init_data_dir(uuid) {
 		let data_dir = `${GLib.get_user_cache_dir()}/${uuid}`;
 
-		if (GLib.mkdir_with_parents(`${data_dir}/icons`, 0o777) < 0)
+		if (GLib.mkdir_with_parents(`${data_dir}/icons`, 0o777) < 0) {
+			global.logError(`Failed to create cache dir at ${data_dir}`);
 			throw new Error(`Failed to create cache dir at ${data_dir}`);
+		}
 
 		return data_dir;
 	}
@@ -173,7 +175,10 @@ class MouseClickEffects {
         Main.keybindingManager.addHotKey(
 			PAUSE_EFFECTS_KEY,
 			this.pause_effects_binding,
-            () => this.set_active(!this.enabled),
+            () => {
+				global.log(UUID, `Click effects ${this.enabled ? "paused" : "resumed"}!`);
+				this.set_active(!this.enabled);
+			},
 		);
     }
 
