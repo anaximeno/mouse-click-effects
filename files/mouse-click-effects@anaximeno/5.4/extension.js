@@ -78,7 +78,8 @@ class MouseClickEffects {
 	}
 
 	_setup_settings(uuid) {
-		let settings = new Settings.AppletSettings(this, uuid);
+		let settings = new Settings.ExtensionSettings(this, uuid);
+
 		let bindings = [
 			{
 				key: "animation-time",
