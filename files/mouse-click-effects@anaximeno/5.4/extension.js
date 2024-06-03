@@ -61,9 +61,6 @@ class MouseClickEffects {
 		this.display_click = (new Debouncer()).debounce(this._animate_click.bind(this), 2);
 		this.colored_icon_store = {};
 		this.enabled = false;
-
-		this.update_colored_icons();
-		this.set_keybindings();
 	}
 
     _init_data_dir(uuid) {
@@ -158,6 +155,8 @@ class MouseClickEffects {
 	}
 
 	enable() {
+		this.update_colored_icons();
+		this.set_keybindings();
 		this.set_active(true);
 	}
 
@@ -239,7 +238,6 @@ class MouseClickEffects {
 
 		if (enabled) {
 			global.log(UUID, "Click effects enabled!");
-			this.update_colored_icons();
 			this.listener.register('mouse');
 		} else {
 			global.log(UUID, "Click effects disabled!");
