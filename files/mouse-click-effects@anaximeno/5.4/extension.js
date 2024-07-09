@@ -236,14 +236,16 @@ class MouseClickEffects {
 
 	set_active(enabled) {
 		this.enabled = enabled;
+
 		this.listener.deregister('mouse');
 
 		if (enabled) {
-			global.log(UUID, "Click effects enabled!");
 			this.listener.register('mouse');
-		} else {
-			global.log(UUID, "Click effects disabled!");
 		}
+
+		global.log(UUID, 
+			`Click effects ${enabled ? "activated" : "deactivated"}!`,
+		);
 	}
 
 	_create_colored_icon_data(click_type, color) {
