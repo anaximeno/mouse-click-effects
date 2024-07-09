@@ -161,8 +161,6 @@ class MouseClickEffects {
 	}
 
 	disable() {
-		this.set_active(false);
-		this.unset_keybindings();
 		this.destroy();
 	}
 
@@ -221,9 +219,13 @@ class MouseClickEffects {
 	}
 
 	destroy() {
-		this.signals.disconnectAllSignals();
 		this.set_active(false);
+		this.unset_keybindings();
+		this.signals.disconnectAllSignals();
 		this.settings.finalize();
+		this.colored_icon_store = null;
+		this.display_click = null;
+		this._click_animation = null;
 	}
 
 	update_colored_icons() {
