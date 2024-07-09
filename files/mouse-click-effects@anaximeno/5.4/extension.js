@@ -193,7 +193,7 @@ class MouseClickEffects {
             const monitorIsInFullscreen = global.screen.get_monitor_in_fullscreen(monitor);
 			this.set_active(!monitorIsInFullscreen);
 		} else {
-			this.set_active(true);
+			this.set_active(this.enabled);
 		}
 	}
 
